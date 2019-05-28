@@ -24,7 +24,10 @@ def textname(text,name):
         text.append(name)
     return text
 
-app=dash.Dash()
+app = dash.Dash(__name__)
+application = app.server
+
+
 
 app.layout=html.Div([
     
@@ -88,5 +91,5 @@ def update_output_div(input_season,graph_type):
                                 hovermode='closest')
     }
 
-if __name__=='__main__':
-    app.run_server(host="0.0.0.0")
+if __name__ == '__main__':
+    application.run
