@@ -55,7 +55,7 @@ app.layout=html.Div([
         options=[dict(label=i ,value=i) 
                 for i in df.columns[2:]
         ],
-        value='暑期第一次小考'
+        value=df.columns[-1]
     )],style={'width': '48%', 'display': 'inline-block'}),
     html.Div([
         dcc.Dropdown(id='graph_type',
