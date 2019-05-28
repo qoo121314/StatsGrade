@@ -7,24 +7,37 @@ import pandas as pd
 import numpy as np
 
 
-df = pd.read_csv('grade1.csv')
-
-bubble_dict={'暑期第一次小考':'暑期第一次小考','暑期第二次小考':'暑期第一次小考','暑期第三次小考':'暑期第二次小考'}
-
 def fetch_group_name(data,student,Score1,Score2,new):
     df['RN']=np.zeros(100)
     for name, group in data.groupby([Score1,Score2]):
         data.loc[data[data[Score1]==name[0]][data[Score2]==name[1]][new].index,new]=str(" ".join(group[student].values))
     return data
 
-def textname(text,name):
-    if text is None:
-        text = name
-    else:
-        text.append(name)
-    return text
+def bubble_dict(dictionary , dataframe):
+    keys=list(dictionary.keys())
+    values=list(dictionary.values())
+    values.pop()
+    values.insert(0, dataframe.columns[2])
+    
+    bubbledict=dict(zip(keys, values))
+    
+    return bubbledict
 
-app = dash.Dash(__name__)
+
+df = pd.read_csv('grade1.csv')
+
+option_dict ={ i:i for i in df.columns[2:]}
+bubble_dict= bubble_dict(option_dict,df)
+
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
+                meta_tags=[
+                    {'name': "viewport",
+                    'content': "width=500",
+                    'initial-scale': 1}
+                ])
 application = app.server
 
 
@@ -39,10 +52,8 @@ app.layout=html.Div([
     html.Div([
     
     dcc.Dropdown(id='season',
-        options=[
-            {'label': '暑期第一次小考', 'value': '暑期第一次小考'},
-            {'label': '暑期第二次小考', 'value': '暑期第二次小考'},
-            {'label': '暑期第三次小考', 'value': '暑期第三次小考'}
+        options=[dict(label=i ,value=i) 
+                for i in df.columns[2:]
         ],
         value='暑期第一次小考'
     )],style={'width': '48%', 'display': 'inline-block'}),
@@ -50,7 +61,8 @@ app.layout=html.Div([
         dcc.Dropdown(id='graph_type',
         options=[
             {'label': '盒鬚圖', 'value': '盒鬚圖'},
-            {'label': '氣泡圖', 'value': '氣泡圖'}
+            {'label': '氣泡圖', 'value': '氣泡圖'},
+            {'label': '成績表', 'value': '成績表'}
         ],
         value='盒鬚圖'
         )],style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
@@ -88,8 +100,16 @@ def update_output_div(input_season,graph_type):
         'layout': go.Layout (title=input_season+"   "+graph_type,
                             xaxis=dict(title=bubble_dict[input_season]+'成績'),
                             yaxis=dict(title=input_season+'成績'),
-                                hovermode='closest')
-    }
+                                hovermode='closest')}
+    elif graph_type == '成績表':
+        return {'data':[go.Table(header=dict(values=['姓名','班級',input_season]),
+                        cells=dict(values=[
+                            df[['姓名','班級',input_season]].dropna().sort_values(by=[input_season],ascending=False)['姓名'],
+                            df[['姓名','班級',input_season]].dropna().sort_values(by=[input_season],ascending=False)['班級'],
+                            df[['姓名','班級',input_season]].dropna().sort_values(by=[input_season],ascending=False)[input_season]
+                       ]),)]
+                }
+    
 
 if __name__ == '__main__':
     application.run
