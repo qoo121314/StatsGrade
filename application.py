@@ -10,31 +10,25 @@ def fetch_group_name(data,student,Score1,Score2,new):
     data[new]=np.zeros(len(data.index))
     for name, group in data.groupby([Score1,Score2]):
         data.loc[data[data[Score1]==name[0]][data[Score2]==name[1]][new].index,new]=str(" ".join(group[student].values))
-    return data[[student,data.columns[1],new]]
+    return data
 
 def bubble_dict(dictionary , dataframe):
     keys=list(dictionary.keys())
     values=list(dictionary.values())
     values.pop()
-    values.insert(0, dataframe.columns[2])
+    values.insert(0, dataframe.columns[3])
     
     bubbledict=dict(zip(keys, values))
     
     return bubbledict
 
 
-df = pd.read_csv('grade1.csv')
+df = pd.read_csv('D:\Git1\dash\Plotly-Dashboards-with-Dash\statistic\grade1.csv')
 
 option_dict ={  i:i for i in df.columns[2:]}
 bubble_dict= bubble_dict(option_dict,df)
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
-                meta_tags=[
-                    {'name': "viewport",
-                    'content': "width=500",
-                    'initial-scale': 1}
-                ])
+app = dash.Dash(__name__)
 application = app.server
 
 app.layout=html.Div([
@@ -48,18 +42,20 @@ app.layout=html.Div([
     
     dcc.Dropdown(id='season',
         options=[dict(label=i ,value=i) 
-                for i in df.columns[2:]
+                for i in df.columns[3:]
         ],
         value=df.columns[-1]
     )],style={'width': '48%', 'display': 'inline-block'}),
     html.Div([
         dcc.Dropdown(id='graph_type',
         options=[
-            {'label': '盒鬚圖', 'value': '盒鬚圖'},
-            {'label': '氣泡圖', 'value': '氣泡圖'},
+            {'label': '盒鬚圖-班級', 'value': '盒鬚圖-班級'},
+            {'label': '盒鬚圖-組別', 'value': '盒鬚圖-組別'},
+            {'label': '氣泡圖-班級', 'value': '氣泡圖-班級'},
+            {'label': '氣泡圖-組別', 'value': '氣泡圖-組別'},
             {'label': '成績表', 'value': '成績表'}
         ],
-        value='盒鬚圖'
+        value='盒鬚圖-班級'
         )],style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
 
     dcc.Graph(id='output-graph'),    
@@ -75,12 +71,12 @@ app.layout=html.Div([
     Input('graph_type', 'value')]
 )
 def update_output_div(input_season,graph_type):
-    if graph_type == '盒鬚圖':
+    if graph_type == '盒鬚圖-班級':
         return {
         'data':[go.Box(y=df[input_season], name= region ) for region in df[df.columns[1]].unique() ],
 
         'layout': go.Layout (title=input_season+"   "+graph_type)}
-    elif graph_type == '氣泡圖':
+    elif graph_type == '氣泡圖-班級':
             return {
         'data':[go.Scatter(
             x=df[df[df.columns[1]]==region][bubble_dict[input_season]],
@@ -97,13 +93,40 @@ def update_output_div(input_season,graph_type):
                             yaxis=dict(title=input_season+'成績'),
                                 hovermode='closest')}
     elif graph_type == '成績表':
-        return {'data':[go.Table(header=dict(values=[df.columns[0],df.columns[1],input_season]),
+        return {'data':[go.Table(header=dict(values=[df.columns[0],df.columns[1], df.columns[2] ,input_season]),
                         cells=dict(values=[
-                            df[[df.columns[0],df.columns[1],input_season]].dropna().sort_values(by=[input_season],ascending=False)[df.columns[0]],
-                            df[[df.columns[0],df.columns[1],input_season]].dropna().sort_values(by=[input_season],ascending=False)[df.columns[1]],
-                            df[[df.columns[0],df.columns[1],input_season]].dropna().sort_values(by=[input_season],ascending=False)[input_season]
+                            df[[df.columns[0],df.columns[1], df.columns[2],input_season]].dropna().sort_values(by=[input_season],ascending=False)[df.columns[0]],
+                            df[[df.columns[0],df.columns[1], df.columns[2],input_season]].dropna().sort_values(by=[input_season],ascending=False)[df.columns[1]],
+                            df[[df.columns[0],df.columns[1], df.columns[2],input_season]].dropna().sort_values(by=[input_season],ascending=False)[df.columns[2]],
+                            df[[df.columns[0],df.columns[1], df.columns[2],input_season]].dropna().sort_values(by=[input_season],ascending=False)[input_season]
                        ]),)]
         }
+    elif graph_type == '盒鬚圖-組別':
+        return {
+        'data':[go.Box(y=df[input_season], name= testset ) for testset in df[df.columns[2]].unique() ],
+
+        'layout': go.Layout (title=input_season+"   "+graph_type)
+        } 
+ 
+    elif graph_type == '氣泡圖-組別' :
+        return {
+        'data':[go.Scatter(
+            x=df[df[df.columns[2]]==testset][bubble_dict[input_season]],
+            y=df[df[df.columns[2]]==testset][input_season], 
+            name= testset,
+            mode='markers',
+            text= fetch_group_name(df,df.columns[0],input_season,bubble_dict[input_season],'RN')[df[df.columns[2]]==testset]['RN']
+            ,opacity=0.5,
+            )
+            for testset in df[df.columns[2]].unique() ],
+
+        'layout': go.Layout (title=input_season+"   "+graph_type,
+                            xaxis=dict(title=bubble_dict[input_season]+'成績'),
+                            yaxis=dict(title=input_season+'成績'),
+                                hovermode='closest')} 
+
+
 
 if __name__ == '__main__':
     application.run
+
