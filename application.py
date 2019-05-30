@@ -23,7 +23,7 @@ def bubble_dict(dictionary , dataframe):
     return bubbledict
 
 
-df = pd.read_csv('D:\Git1\dash\Plotly-Dashboards-with-Dash\statistic\grade1.csv')
+df = pd.read_csv('grade1.csv')
 
 option_dict ={  i:i for i in df.columns[2:]}
 bubble_dict= bubble_dict(option_dict,df)
