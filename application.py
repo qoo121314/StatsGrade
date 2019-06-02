@@ -127,6 +127,7 @@ def update_output_div(input_season,graph_type):
 
 
 
+
 if __name__ == '__main__':
-    application.run
+    application.run(debug=True)
 
