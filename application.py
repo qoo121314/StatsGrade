@@ -5,6 +5,7 @@ from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import pandas as pd
 import numpy as np
+import os
 
 def fetch_group_name(data,student,Score1,Score2,new):
     data[new]=np.zeros(len(data.index))
@@ -23,10 +24,22 @@ def bubble_dict(dictionary , dataframe):
     return bubbledict
 
 
-df = pd.read_csv('grade1.csv')
+df = pd.read_csv('grade.csv')
 
 option_dict ={  i:i for i in df.columns[3:]}
 bubble_dict= bubble_dict(option_dict,df)
+
+
+if os.path.exists('bubblegrade.h5'):
+    data=pd.read_hdf('bubblegrade.h5',key='data')
+else:
+    for i in df.columns[3:]:
+        fetch_group_name(df,df.columns[0],i,bubble_dict[i],i+bubble_dict[i])
+    h5 = pd.HDFStore('bubblegrade.h5','w')
+    h5['data'] = df
+    df = pd.read_csv('grade.csv')
+    h5.close()
+
 
 app = dash.Dash(__name__)
 application = app.server
@@ -83,7 +96,7 @@ def update_output_div(input_season,graph_type):
             y=df[df[df.columns[1]]==region][input_season], 
             name= region,
             mode='markers',
-            text= fetch_group_name(df,df.columns[0],input_season,bubble_dict[input_season],'RN')[df[df.columns[1]]==region]['RN']
+            text= data[data[data.columns[1]]==region][input_season+bubble_dict[input_season]]
             ,opacity=0.5,
             )
             for region in df[df.columns[1]].unique() ],
@@ -115,7 +128,7 @@ def update_output_div(input_season,graph_type):
             y=df[df[df.columns[2]]==testset][input_season], 
             name= testset,
             mode='markers',
-            text= fetch_group_name(df,df.columns[0],input_season,bubble_dict[input_season],'RN')[df[df.columns[2]]==testset]['RN']
+            text= data[data[data.columns[2]]==testset][input_season+bubble_dict[input_season]]
             ,opacity=0.5,
             )
             for testset in df[df.columns[2]].unique() ],
