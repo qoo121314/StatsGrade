@@ -25,7 +25,7 @@ def bubble_dict(dictionary , dataframe):
 
 df = pd.read_csv('grade1.csv')
 
-option_dict ={  i:i for i in df.columns[2:]}
+option_dict ={  i:i for i in df.columns[3:]}
 bubble_dict= bubble_dict(option_dict,df)
 
 app = dash.Dash(__name__)
