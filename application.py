@@ -56,7 +56,7 @@ app.layout=html.Div([
     dcc.Dropdown(id='season',
         options=[dict(label=i ,value=i) 
                 for i in df.columns[3:]
-        ],
+        ],searchable=False,clearable=False,
         value=df.columns[-1]
     )],style={'width': '48%', 'display': 'inline-block'}),
     html.Div([
@@ -67,15 +67,15 @@ app.layout=html.Div([
             {'label': '氣泡圖-班級', 'value': '氣泡圖-班級'},
             {'label': '氣泡圖-組別', 'value': '氣泡圖-組別'},
             {'label': '成績表', 'value': '成績表'}
-        ],
+        ],searchable=False,clearable=False,
         value='盒鬚圖-班級'
         )],style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
 
     dcc.Graph(id='output-graph'),    
     html.Div([
     html.Pre(id='hover-data', style={'paddingTop':35})
-    ], style={'width':'30%'})
-],style={'padding':10}
+    ], style={'width':'30%','height': '10vh'})
+],style={'padding':12}
 )
 
 @app.callback(
