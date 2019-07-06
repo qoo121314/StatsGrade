@@ -71,11 +71,11 @@ app.layout=html.Div([
         value='盒鬚圖-班級'
         )],style={'width': '48%', 'float': 'right', 'display': 'inline-block'}),
 
-    dcc.Graph(id='output-graph'),    
+    dcc.Graph(id='output-graph', style={'width':'100%', 'height': '65vh','display': 'inline-block' }),    
     html.Div([
-    html.Pre(id='hover-data', style={'paddingTop':35})
-    ], style={'width':'30%','height': '10vh'})
-],style={'padding':12}
+    html.Pre(id='hover-data', style={'paddingTop':10})
+    ], style={'width':'30%',})
+],style={'padding':5}
 )
 
 @app.callback(
